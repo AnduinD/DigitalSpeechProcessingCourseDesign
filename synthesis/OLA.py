@@ -4,19 +4,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 #from playsound import playsound
 
-y,sr = librosa.load('./input.wav')
+
  
-def wsola(y,sr,rate,shiftm):
-    Hs = sr * shiftm/1000
-    f1 = Hs*2
+def wsola(y,sr,rate,shiftms):
+    '''
+    WSOLA算法语音变速重建
+    param y: 待处理语音
+    param sr: 原始采样率
+    param rate: 规整因子a
+    param shiftms: （大概像输出信号的时间分辨率？，用来确定输出插帧的间隔）
+    return:
+    '''
+    Hs = sr * shiftms/1000 # 输出帧移长度
+    f1 = Hs*2 # 帧长
     s = int(Hs)
-    epstep = int(Hs * rate)
+    epstep = int(Hs * rate)  # Ha长度（输入的帧移）
     win = np.hanning(f1)
     wlen = len(y)
-    wsolaed = np.zeros(int(np.floor(wlen/rate)))
-    sp = int(Hs * 2)
-    rp = sp + s
-    ep = sp + epstep
+    wsolaed = np.zeros(int(np.floor(wlen/rate))) # 初始化处理后的音频
+    sp = int(Hs * 2)  # 原信号采样帧的中心
+    rp = sp + s       # 估计的最佳相似帧中心
+    ep = sp + epstep  # 原信号的下一帧采样帧的中心
     outp = int(Hs)
     for i in range(outp):
         wsolaed[i] = y[i]
@@ -33,12 +41,12 @@ def wsola(y,sr,rate,shiftm):
     a = 1
     while wlen > ep + s*2:
         ref = y[rp - s +1 :rp +s]
-        buff = y[ep - s*2 +1:ep + s]
+        buff = y[ep - s*2 +1:ep + s]  # 搜索宽度
         #寻找相似区域
         corr_max = 0
         corr = 0
         corr1 = np.zeros(len(ref))
-        for i in range(len(buff)-s*2):
+        for i in range(len(buff)-s*2): # 计算互相关序列
             compare = buff[i:i+s*2]
             for j in range(len(ref)):
                 corr1[j] = ref[j]*compare[j]
@@ -70,18 +78,17 @@ def wsola(y,sr,rate,shiftm):
         #叠加
         for i in range(s):
             wsolaed[outp*a + i] = spdata[i] + epdata[i]
+        # 准备处理下一帧（计算起始位置）
         sp = epd
         rp = sp + s
         ep = ep + epstep
         a += 1
     return wsolaed
  
-#储存并播放变速后音频
-c = wsola(y,sr,1.25,10)
-sf.write("D:\\pythonProject\\harvardc.wav", c, sr)
-#playsound('D:\\pythonProject\\harvardc.wav')
- 
-#比较重采样方式变速的音频
-sr1 = round(sr*1.25)
-sf.write("D:\\pythonProject\\harvardd.wav", y, sr1)
-#playsound('D:\\pythonProject\\harvardd.wav')
+if __name__ == '__main__':
+    y,sr = librosa.load('./input.wav')
+    c = wsola(y,sr,1.25,10)#储存并播放变速后音频
+    sf.write("D:\\pythonProject\\harvardc.wav", c, sr)#;playsound('D:\\pythonProject\\harvardc.wav')
+    sr1 = round(sr*1.25)#比较重采样方式变速的音频
+    sf.write("D:\\pythonProject\\harvardd.wav", y, sr1)#;playsound('D:\\pythonProject\\harvardd.wav')
+    

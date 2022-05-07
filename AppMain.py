@@ -6,7 +6,7 @@ import scipy, librosa
 import matplotlib.pyplot as plt
 from recognition.denoise import specsub_denoise
 from recognition.base_freq import get_base_freq
-from recognition.formant import get_formant
+from recognition.formant import get_formant,formant_show
 import synthesis.voice_morph as morph
 from synthesis.OLA import wsola
 import visualize.specshow as visualize
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     outputpath = "./wavout/output_test2.wav"
     path = "./input.wav"
     y_org, sr = librosa.load(path,sr=None)
-    y_org = y_org[:50000]
+    y_org = y_org[:40000]
 
     tline = np.arange(len(y_org))/sr # 生成时间轴
 
@@ -26,30 +26,27 @@ if __name__ == '__main__':
     y_detrend = scipy.signal.detrend(y_org);# 去除直流信号
     y_denoise,chunk,stride = specsub_denoise(y_detrend,sr);# 谱减法去噪（通过读前几帧的内容）
    # zcr = librosa.feature.zero_crossing_rate(y_denoise)  # 过零率检测
-    base_freq,voiced_flag,voiced_probs = get_base_freq(y_denoise,sr) # 基频提取
+   # base_freq,voiced_flag,voiced_probs = get_base_freq(y_denoise,sr) # 基频提取
+    
     formant,loc,spec = get_formant(y_denoise,6) # 共振峰提取--倒谱法
+    formant_show(y_denoise,sr,loc,spec) # 可视化
     #formant= librosa.lpc(y_denoise ,order=4) # 共振峰提取--LPC法
 
-    ## 变形处理段（改基频和共振峰）
+    ## 变形处理段
+    y_new=librosa.effects.pitch_shift(y_denoise, sr, n_steps=-1) # +3 +2 -5(移音高 即改基频)
     
-
-    y_new=0
-    ## 重建段（WSOLA）
-
-    y_out =wsola(y_new,sr,1.25,10)
-
-
+    y_out =wsola(y_new,sr,1.25,100)## 重建段（WSOLA）
 
     # spec = visualize.specshowplot()
     # plt.plot(formant_loc,formant,linewidth=0.05);plt.grid();
     # plt.show();
 
- 
-    # y=librosa.effects.pitch_shift(y_denoise, sr, n_steps=-1) # +3 +2 -5(移音高 即改基频)
-
-
-
     # y_speed =librosa.effects.time_stretch(y,3)
+
+    '''重建后共振峰可视化'''
+    formant_out,loc_out,spec_out = get_formant(y_denoise,6) # 计算新共振峰
+    formant_show(y_out,sr,loc_out,spec_out) # 可视化共振峰
+
 
     '''时域可视化'''
     # plt.subplot(411);plt.plot(tline,y_org,linewidth=0.05);plt.title("org");plt.xlim(0,tline[-1]);plt.grid()
@@ -64,6 +61,8 @@ if __name__ == '__main__':
     #spec.addplot(outputpath, 1)
     #spec.show()
 
+
+    plt.show()
     # librosa.output.write_wav(outputpath, y, round(sr*3)) # 写wav输出
 
 
