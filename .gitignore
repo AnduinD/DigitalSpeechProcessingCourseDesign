@@ -152,7 +152,6 @@ cython_debug/
 *.txt
 
 # resource
-*.wav
-*.mp3
 *.jpg
 *.png
+*.drawio
