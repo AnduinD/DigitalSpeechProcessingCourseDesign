@@ -146,12 +146,12 @@ cython_debug/
 
 
 # document
-*.pdf
-*.docx
-*.doc
-*.txt
+#*.pdf
+#*.docx
+#*.doc
+#*.txt
 
 # resource
-*.jpg
-*.png
-*.drawio
+#*.jpg
+#*.png
+#*.drawio

@@ -25,7 +25,8 @@ def get_base_freq(y,sr):
 
 if __name__ == '__main__':
     path = "./input.wav"
-    y, sr = librosa.load("./input.wav")
+    #path = "./wavout/output_man.wav"
+    y, sr = librosa.load(path)
 
     f0, voiced_flag, voiced_probs = get_base_freq(y,sr)
 

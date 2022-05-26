@@ -19,7 +19,7 @@ def get_formant(u, cepstL):
     cepst = np.zeros(wlen2, dtype=np.complex)  # 分配内存
     cepst[:cepstL] = Cepst[:cepstL]   # 倒谱加窗
     cepst[-cepstL + 1:] = Cepst[-cepstL + 1:] # 倒谱加窗
-    spec = np.real(np.fft.fft(cepst[:wlen2])) # 取包络线  #然而这个逆变换并取不到包络线唉
+    spec = np.real(np.fft.fft(cepst[:wlen2])) # 取包络线
     val, loc = local_maxium(spec)  #找极大值
     return val, loc, spec
 
@@ -32,7 +32,7 @@ def local_maxium(x):
     return maxium: 极大值序列
     return loc: 极大值点的位置序列
     """
-    d = np.diff(x) # 一阶差分（相当于求导
+    d = np.diff(x) # 一阶差分（相当于求导）
     l_d = len(d)
     maxium = []
     loc = []
@@ -44,8 +44,9 @@ def local_maxium(x):
 
 
 if __name__ == '__main__':
-    path = "./input.wav"
-    y, sr = librosa.load("./input.wav")
+    #path = "./input.wav"
+    path = "./wavout/output_man.wav"
+    y, sr = librosa.load(path)
     
     y = lfilter([1, -0.99], [1], y) # 预加重
     cepstL = 6
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     y_abs = np.abs(np.fft.fft(np.multiply(y, np.hamming(wlen))))[:wlen2]#画频谱用
     freq = [i*sr/wlen for i in range(wlen2)] # 生成频率轴
     plt.subplot(2, 1, 1);plt.plot(freq, y_abs,linewidth=0.1);plt.title('freq');plt.grid() # 画频谱
-    plt.subplot(2, 1, 2);plt.plot(freq, spec);plt.title('formant estimationg');plt.grid() # 画共振峰
+    plt.subplot(2, 1, 2);plt.plot(freq, spec);plt.title('formant estimation');plt.grid() # 画共振峰
     for i in range(len(loc)):
         plt.subplot(2, 1, 2)
         plt.plot([freq[loc[i]],freq[loc[i]]],[np.min(spec), spec[loc[i]]], '-.k') # 画标识线
